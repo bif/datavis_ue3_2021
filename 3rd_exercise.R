@@ -25,8 +25,8 @@ server <- function(input, output, session) {
       addProviderTiles("OpenStreetMap") %>%
       setView( lng = 13.4
                , lat = 47.7
-               , zoom = 7)
-      #addTiles()
+               , zoom = 7) %>%
+      addTiles()
   })
 }
 
