@@ -2,7 +2,7 @@
 #install.packages(c("OpenStreetMap", "DT", "RColorBrewer", "mapproj", "sf", "RgoogleMaps", 
 #                   "scales", "rworldmap", "maps", "tidyverse", "rnaturalearth", 
 #                   "rnaturalearthdata", "rgeos", "ggspatial", "maptools", "leaflet", "sf", 
-#                   "tmap", "here", "rgdal", "scales"))
+#                   "tmap", "here", "rgdal", "scales", "sf"))
 # install package from github
 #devtools::install_github("dkahle/ggmap", ref = "tidyup")
 
@@ -12,21 +12,28 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(leaflet)
+library(sf)
 # extract map
 #AustrianMap <- openmap(c(49.1,9.4), c(46.3,17.3))
 # plot map
 #plot(AustrianMap)
 
+districts = readsf("./data_base/maps/Austria_shape/Austria_shapefile/at_100km.shp")#read_sf("streets.shp")
 
 server <- function(input, output, session) {
   output$map <- leaflet::renderLeaflet({
     leaflet() %>% 
-      addTiles() %>%
       addProviderTiles("OpenStreetMap") %>%
       setView( lng = 13.4
                , lat = 47.7
-               , zoom = 7) %>%
-      addTiles()
+               , zoom = 7) #%>%
+      # add austrian districts
+     # addPolylines(
+      # data = districts,
+       # opacity = 0.5,
+        #weight = 1,
+        #color = "red"
+     # )
   })
 }
 

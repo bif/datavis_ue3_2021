@@ -7,53 +7,21 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 library(leaflet)
-# extract map
-#AustrianMap <- openmap(c(49.1,9.4), c(46.3,17.3))
-# plot map
-#plot(AustrianMap)
 
-geolandbasemap<-"http://{s}.wien.gv.at/basemap/geolandbasemap/normal/google3857/{z}/{y}/{x}.png"
-bmapgrau<-"http://{s}.wien.gv.at/basemap/bmapgrau/normal/google3857/{z}/{y}/{x}.png"
-bmapoverlay<-"http://{s}.wien.gv.at/basemap/bmapoverlay/normal/google3857/{z}/{y}/{x}.png"
-bmaphidpi<-"http://{s}.wien.gv.at/basemap/bmaphidpi/normal/google3857/{z}/{y}/{x}.jpeg"
-bmaportho<-"http://{s}.wien.gv.at/basemap/bmaporthofoto30cm/normal/google3857/{z}/{y}/{x}.jpeg"
+# From https://data.opendataportal.at/dataset/geojson-daten-osterreich
+atcounties <- rgdal::readOGR("C:/Users/Stefan/Documents/Studium/TU_Wien_DataScience/SS2021/data_vis_ue/Exercise_03/data_base/maps/AustriaGeoJSON/2021/simplified-99.9/laender_999_geo.json")
 
-# standard
-basemap_1<-leaflet() %>% addTiles(geolandbasemap,
-                                options=tileOptions(minZoom=0, subdomains=c("maps","maps1", "maps2", "maps3", "maps4")), 
-                                attribution = "www.basemap.at") 
 
-print(basemap_1)
-#basemap %>% setView(14.62036, 48.32018, zoom = 12) # zoom to the mean location of my cats
+pal <- colorNumeric("viridis", NULL)
 
-# gray
-basemap_2<-leaflet() %>% addTiles(bmapgrau,
-                                options=tileOptions(minZoom=0, subdomains=c("maps","maps1", "maps2", "maps3", "maps4")), 
-                                attribution = "www.basemap.at")
 
-print(basemap_2
-
-# high dpi
-basemap_3<-leaflet() %>% addTiles(bmaphidpi,
-                                options=tileOptions(minZoom=0, subdomains=c("maps","maps1", "maps2", "maps3", "maps4")), 
-                                attribution = "www.basemap.at")
-
-print(basemap_3)
-
-# ortho+overlay
-basemap_4<-leaflet() %>% addTiles(bmaportho,
-                                options=tileOptions(minZoom=0, subdomains=c("maps","maps1", "maps2", "maps3", "maps4")), 
-                                attribution = "www.basemap.at") %>% 
-  addTiles(bmapoverlay,
-           options=tileOptions(minZoom=0, subdomains=c("maps","maps1", "maps2", "maps3", "maps4")), 
-           attribution = "www.basemap.at")
-
-print(basemap_4)
 
 
 server <- function(input, output, session) {
   output$map <- leaflet::renderLeaflet({
-    basemap_4 %>%
+    leaflet(atcounties) %>%
+      addTiles() %>%
+      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1) %>%
       setView( lng = 13.4
                , lat = 47.7
                , zoom = 7) %>%
