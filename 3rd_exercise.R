@@ -13,21 +13,22 @@ library(ggplot2)
 library(dplyr)
 library(leaflet)
 # extract map
-AustrianMap <- openmap(c(49.1,9.4), 
-                       c(46.3,17.3))
+#AustrianMap <- openmap(c(49.1,9.4), c(46.3,17.3))
 # plot map
 #plot(AustrianMap)
 
 
-myMap <- leaflet(options = leafletOptions(minZoom = 11)) %>%
-  addProviderTiles("OpenStreetMap-Austria") %>%
-  setView( lng = 47.6
-           , lat = 13.5
-           , zoom = 11 ) %>%
-  setMaxBounds( lng1 = 49.1
-                , lat1 = 9.4
-                , lng2 = 46.3
-                , lat2 = 17.3 )
+server <- function(input, output, session) {
+  output$map <- leaflet::renderLeaflet({
+    leaflet() %>% 
+      addTiles() %>%
+      addProviderTiles("OpenStreetMap") %>%
+      setView( lng = 13.4
+               , lat = 47.7
+               , zoom = 7)
+      #addTiles()
+  })
+}
 
 
 ui <- bootstrapPage(
@@ -47,15 +48,6 @@ ui <- bootstrapPage(
     html, body {width:100%;height:100%}     
     #controls{background-color:white;padding:20px;}
   "))
-
-server <- function(input, output, session) {
-  output$map <- leaflet::renderLeaflet({
-    leaflet() %>% 
-      addTiles() %>%
-      setView( -98.58, 39.82, zoom = 5) %>% 
-      addTiles()
-  })
-}
 
 shinyApp(ui, server)
 
