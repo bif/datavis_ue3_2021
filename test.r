@@ -9,7 +9,7 @@ library(dplyr)
 library(leaflet)
 
 # From https://data.opendataportal.at/dataset/geojson-daten-osterreich
-atcounties <- rgdal::readOGR("C:/Users/Stefan/Documents/Studium/TU_Wien_DataScience/SS2021/data_vis_ue/Exercise_03/data_base/maps/AustriaGeoJSON/2021/simplified-99.9/laender_999_geo.json")
+atcounties <- rgdal::readOGR("C:/Users/Stefan/Documents/Studium/TU_Wien_DataScience/SS2021/data_vis_ue/Exercise_03/data_base/maps/AustriaGeoJSON/2021/simplified-99.9/bezirke_999_geo.json")
 
 
 pal <- colorNumeric("viridis", NULL)
@@ -21,7 +21,7 @@ server <- function(input, output, session) {
   output$map <- leaflet::renderLeaflet({
     leaflet(atcounties) %>%
       addTiles() %>%
-      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1) %>%
+      addPolygons(stroke = TRUE, smoothFactor = 0.3, fillOpacity = 0.5) %>%
       setView( lng = 13.4
                , lat = 47.7
                , zoom = 7) %>%
