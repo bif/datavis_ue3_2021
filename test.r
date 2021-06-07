@@ -22,7 +22,12 @@ server <- function(input, output, session) {
     leaflet(atcounties) %>%
       addTiles() %>%
       addPolygons(stroke = TRUE, smoothFactor = 0.3, fillOpacity = 0.5) %>%
-      setView( lng = 13.4
+#      ,
+#    fillColor = ~pal(log10(pop)),
+#    label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
+#    addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
+#              labFormat = labelFormat(transform = function(x) round(10^x))) %>%
+            setView( lng = 13.4
                , lat = 47.7
                , zoom = 7) %>%
       addTiles()
