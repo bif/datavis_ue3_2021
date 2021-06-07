@@ -2,7 +2,7 @@
 #install.packages(c("OpenStreetMap", "DT", "RColorBrewer", "mapproj", "sf", "RgoogleMaps", 
 #                   "scales", "rworldmap", "maps", "tidyverse", "rnaturalearth", 
 #                   "rnaturalearthdata", "rgeos", "ggspatial", "maptools", "leaflet", "sf", 
-#                   "tmap", "here", "rgdal", "scales", "sf", "geojsonlint", "plotly"))
+#                   "tmap", "here", "rgdal", "scales", "sf", "geojsonlint", "plotly", "geojsonR"))
 # install package from github
 #devtools::install_github("dkahle/ggmap", ref = "tidyup")
 
@@ -13,8 +13,10 @@ library(ggplot2)
 library(dplyr)
 library(leaflet)
 library(sf)
-library(geojsonlint)
+library(geojsonio)
 library(plotly)
+library(RJSONIO)
+library(geojsonR)
 
 # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv")
@@ -22,13 +24,25 @@ data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ
 #class(data)
 
 # load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
-map = geojson_read("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/blob/master/2021/simplified-99.9/bezirke_999_geo.json")
-districts <- rgdal::readOGR(map)
+#map = geojson_read("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/blob/master/2021/simplified-99.9/bezirke_999_geo.json")
+#districts = rgdal::readOGR(map)
+
+
+districts<- rgdal::readOGR("C:/Users/Stefan/Documents/Studium/TU_Wien_DataScience/SS2021/data_vis_ue/Exercise_03/data_base/maps/AustriaGeoJSON/2021/simplified-99.9/bezirke_999_geo.json")
+
+
+#tmpfile <- tempfile(tmpdir=getwd()) 
+#file.create(tmpfile.json)
+#path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
+download.file(url("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/blob/master/2021/simplified-99.9/bezirke_999_geo.json"), destfile="bezirke_999_geo.json")
+districts<- rgdal::readOGR(dsn=".", layer="bezirke_999_geo.json")
+#file.remove("./bezirke_999_geo.json")  #delete the tmpfile
+
 
 pal <- colorNumeric("viridis", NULL)
 
-server <- function(input, output, session) {
-  output$map <- leaflet::renderLeaflet({
+server = function(input, output, session) {
+  output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
       addTiles() %>%
       addPolygons(stroke = TRUE, smoothFactor = 0.3, fillOpacity = 0.5) %>%
@@ -44,7 +58,7 @@ server <- function(input, output, session) {
   })
 }
 
-ui <- bootstrapPage(
+ui = bootstrapPage(
   theme = shinythemes::shinytheme('simplex'),
   leaflet::leafletOutput('map', height = '100%', width = '100%'),
   absolutePanel(top = 10, left = 50, id = 'controls',
@@ -63,3 +77,4 @@ ui <- bootstrapPage(
 
 
 shinyApp(ui, server)
+
