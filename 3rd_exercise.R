@@ -25,13 +25,9 @@ data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ
 
 # load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
 #map = geojson_read("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json")
-#districts = rgdal::readOGR(map)
+#dstricts = rgdal::readOGR(map)
 
-
-#districts<- rgdal::readOGR("C:/Users/Stefan/Documents/Studium/TU_Wien_DataScience/SS2021/data_vis_ue/Exercise_03/data_base/maps/AustriaGeoJSON/2021/simplified-99.9/bezirke_999_geo.json")
-
-
-#tmpfile <- tempfile(tmpdir=getwd()) 
+# directly read geojson trows an error - workaround with temporarry download
 path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
 download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
 districts<- rgdal::readOGR(path_file)
