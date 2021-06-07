@@ -39,30 +39,27 @@ server <- function(input, output, session) {
       #              labFormat = labelFormat(transform = function(x) round(10^x))) %>%
       setView( lng = 13.4
                , lat = 47.7
-               , zoom = 7) %>%
+               , zoom = 8) %>%
       addTiles()
   })
 }
 
+ui <- bootstrapPage(
+  theme = shinythemes::shinytheme('simplex'),
+  leaflet::leafletOutput('map', height = '100%', width = '100%'),
+  absolutePanel(top = 10, left = 50, id = 'controls',
+                selectInput("selectdistrict", "select District", unique(data$Bezirk)),
+                sliderInput("slidedate", 
+                            "select Date", 
+                            min = as.Date("2020-02-26","%Y-%m-%d"),
+                            max = as.Date("2021-06-06","%Y-%m-%d"),
+                            value = as.Date("2020-02-26")
+                )
+  ),
+  tags$style(type = "text/css", "
+    html, body {width:100%;height:100%}     
+    #controls{background-color:white;padding:20px;}
+  "))
 
-ui <- fluidPage(
-  titlePanel("Explore Covid19 cases in Austria from 26th of Feb 2020 to 6th of Jun 2021"),
-  #theme = shinythemes::shinytheme("darkly"),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("selectdistrict", "select district", unique(data$Bezirk)),
-      sliderInput("slidedate", 
-                  "Select date", 
-                   min = as.Date("2020-02-26","%Y-%m-%d"),
-                   max = as.Date("2021-06-06","%Y-%m-%d"),
-                   value = as.Date("2020-02-26"),
-                   timeFormat="%Y-%m-%d")
-    ),
-    mainPanel(
-      leaflet::leafletOutput('map'),
-    )
-  )
-)
- 
 
 shinyApp(ui, server)
