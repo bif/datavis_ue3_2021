@@ -2,7 +2,7 @@
 #install.packages(c("OpenStreetMap", "DT", "RColorBrewer", "mapproj", "sf", "RgoogleMaps", 
 #                   "scales", "rworldmap", "maps", "tidyverse", "rnaturalearth", 
 #                   "rnaturalearthdata", "rgeos", "ggspatial", "maptools", "leaflet", "sf", 
-#                   "tmap", "here", "rgdal", "scales", "sf", "geojsonlint"))
+#                   "tmap", "here", "rgdal", "scales", "sf", "geojsonlint", "plotly"))
 # install package from github
 #devtools::install_github("dkahle/ggmap", ref = "tidyup")
 
@@ -14,27 +14,18 @@ library(dplyr)
 library(leaflet)
 library(sf)
 library(geojsonlint)
-# extract map
-#AustrianMap <- openmap(c(49.1,9.4), c(46.3,17.3))
-# plot map
-#plot(AustrianMap)
+library(plotly)
 
-
-# load data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
+# load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv")
 #head(data)
 #class(data)
 
-# load map from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
+# load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
 map = geojson_read("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/blob/master/2021/simplified-99.9/bezirke_999_geo.json")
 districts <- rgdal::readOGR(map)
-#districts <- rgdal::readOGR("C:/Users/Stefan/Documents/Studium/TU_Wien_DataScience/SS2021/data_vis_ue/Exercise_03/data_base/maps/AustriaGeoJSON/2021/simplified-99.9/bezirke_999_geo.json")
-
 
 pal <- colorNumeric("viridis", NULL)
-
-
-
 
 server <- function(input, output, session) {
   output$map <- leaflet::renderLeaflet({
@@ -54,22 +45,24 @@ server <- function(input, output, session) {
 }
 
 
-ui <- bootstrapPage(
-  theme = shinythemes::shinytheme('simplex'),
-  leaflet::leafletOutput('map', height = '100%', width = '100%'),
-  absolutePanel(top = 10, right = 10, id = 'controls',
-                # CODE BELOW: Add slider input named nb_fatalities
-                sliderInput("nb_fatalities", "Minimum Fatalities", value=10, min=1, max=40),
-                # CODE BELOW: Add date range input named date_range
-                dateRangeInput("date_range", "Select Date:",
-                               start  = "2010-01-01",
-                               end    = "2019-12-01",
-                               format = "yyyy-mm-dd"
-                )
-  ),
-  tags$style(type = "text/css", "
-    html, body {width:100%;height:100%}     
-    #controls{background-color:white;padding:20px;}
-  "))
+ui <- fluidPage(
+  titlePanel("Explore Covid19 cases in Austria from 26th of Feb 2020 to 6th of Jun 2021"),
+  #theme = shinythemes::shinytheme("darkly"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("selectdistrict", "select district", unique(data$Bezirk)),
+      sliderInput("slidedate", 
+                  "Select date", 
+                   min = as.Date("2020-02-26","%Y-%m-%d"),
+                   max = as.Date("2021-06-06","%Y-%m-%d"),
+                   value = as.Date("2020-02-26"),
+                   timeFormat="%Y-%m-%d")
+    ),
+    mainPanel(
+      leaflet::leafletOutput('map'),
+    )
+  )
+)
+ 
 
 shinyApp(ui, server)
