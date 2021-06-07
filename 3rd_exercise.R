@@ -22,7 +22,7 @@ library(geojsonR)
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
 head(data)
 
-date <- format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%d.%m.%Y")
+date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%d.%m.%Y")
 #time <- format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%H:%M:%S")
 data$Time = NULL
 data = data.frame(date, data)
@@ -33,9 +33,9 @@ data = data.frame(date, data)
 #dstricts = rgdal::readOGR(map)
 
 # directly read geojson trows an error - workaround with temporarry download
-path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
 download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
-districts<- rgdal::readOGR(path_file)
+path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
+districts = rgdal::readOGR(path_file)
 file.remove("./bezirke_999_geo.json")  #delete the tmpfile
 
 
