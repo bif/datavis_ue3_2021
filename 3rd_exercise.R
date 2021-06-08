@@ -20,13 +20,14 @@ library(geojsonR)
 
 # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
-head(data)
+#head(data)
 
 date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%d.%m.%Y")
 #time <- format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%H:%M:%S")
 data$Time = NULL
 data = data.frame(date, data)
 #head(data)
+
 
 # load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
 #map = geojson_read("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json")
@@ -56,19 +57,26 @@ server = function(input, output, session) {
                , zoom = 8) %>%
       addTiles()
   })
+  
+  output$testtext <- reactive({
+    data %>%
+      filter(Bezirk == input$seldistrict, date == input$seldate)
+  })
+
 }
 
 ui = bootstrapPage(
   theme = shinythemes::shinytheme('simplex'),
   leaflet::leafletOutput('map', height = '100%', width = '100%'),
   absolutePanel(top = 10, left = 50, id = 'controls',
-                selectInput("selectdistrict", "select District", append("all", unique(data$Bezirk))),
-                sliderInput("slidedate", 
+                selectInput("seldistrict", "select District", append("all", unique(data$Bezirk))),
+                sliderInput("seldate", 
                             "select Date", 
                             min = as.Date("2020-02-26","%Y-%m-%d"),
                             max = as.Date("2021-06-06","%Y-%m-%d"),
                             value = as.Date("2020-02-26")
-                )
+                ),
+                textOutput("testtext")
   ),
   tags$style(type = "text/css", "
     html, body {width:100%;height:100%}     
