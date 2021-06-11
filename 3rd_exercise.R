@@ -58,10 +58,15 @@ server = function(input, output, session) {
       addTiles()
   })
   
-  output$testtext <- reactive({
+   tmp = reactive({
     data %>%
-      filter(Bezirk == input$seldistrict, date == input$seldate)
+      reactive(filter(Bezirk == input$seldistrict, date == input$seldate))
   })
+   
+   
+   output$testtext = reactive({
+     tmp$SiebenTageInzidenzFaelle
+   })
 
 }
 
