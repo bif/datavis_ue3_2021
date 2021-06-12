@@ -18,6 +18,11 @@ library(plotly)
 library(RJSONIO)
 library(geojsonR)
 
+g = "1"
+str(g)
+g=transform(g, g=as.numeric(g))
+str(g)
+
 # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
 #head(data)
@@ -26,12 +31,19 @@ date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format 
 #time <- format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%H:%M:%S")
 data$Time = NULL
 
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-norm7 = range01(as.double(sub(",", ".", data$SiebenTageInzidenzFaelle, fixed = TRUE)))
-print(norm7)
+data = data.frame(date, data)
+data$SiebenTageInzidenzFaelle = gsub(",", ".", data$SiebenTageInzidenzFaelle)
+data=mutate(data, SiebenTageInzidenzFaelle = as.double(SiebenTageInzidenzFaelle))
 
-data = data.frame(date, data, norm7)
-head(data)
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+colorRange7 <- function(x){
+  range01(x)
+}
+        
+#colorRange7 = as.numeric(range01(as.double(sub(",", ".", data$SiebenTageInzidenzFaelle, fixed = TRUE)))*100)
+str(data)
+print(max(data$SiebenTageInzidenzFaelle))
 
 
 # load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
