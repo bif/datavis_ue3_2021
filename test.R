@@ -49,18 +49,23 @@ server = function(input, output, session) {
     {
       x = data %>%
         filter(date == input$seldate)
-      print(x)
-      x
+      
+      y = data.frame(x$SiebenTageInzidenzFaelle)
+      #print(y)
+      rownames(y) = x$Bezirk
+      print(y[input$seldistrict])
+      y
     }
     else
     {
       x = data %>%
         filter(Bezirk == input$seldistrict, date == input$seldate)
-      x
+      
+      print(paste("Bezirk: ", x$SiebenTageInzidenzFaelle))
+      x$SiebenTageInzidenzFaelle
     }
   })
   
-
   output$testtext = dataInput
 }
 
