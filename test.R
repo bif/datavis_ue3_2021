@@ -26,7 +26,7 @@ date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format 
 #time <- format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%H:%M:%S")
 data$Time = NULL
 data = data.frame(date, data)
-#head(data)
+head(data)
 
 
 # load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
@@ -34,14 +34,14 @@ data = data.frame(date, data)
 #dstricts = rgdal::readOGR(map)
 
 # directly read geojson trows an error - workaround with temporarry download
-download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
-path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
-districts = rgdal::readOGR(path_file)
-file.remove("./bezirke_999_geo.json")  #delete the tmpfile
+##download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
+##path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
+##districts = rgdal::readOGR(path_file)
+##file.remove("./bezirke_999_geo.json")  #delete the tmpfile
 
 
-pal <- colorNumeric("viridis", NULL)
 
+  
 server = function(input, output, session) {
   
   dataInput = reactive({
@@ -51,44 +51,29 @@ server = function(input, output, session) {
     x$SiebenTageInzidenzFaelle
   })
   
-  
-  output$map = leaflet::renderLeaflet({
-    leaflet(districts) %>%
-      addTiles() %>%
-      addPolygons(stroke = TRUE, smoothFactor = 0.3, fillOpacity = 0.5) %>%
-      #      ,
-      #    fillColor = ~pal(log10(pop)),
-      #    label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
-      #    addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
-      #              labFormat = labelFormat(transform = function(x) round(10^x))) %>%
-      setView( lng = 13.4
-               , lat = 47.7
-               , zoom = 8) %>%
-      addTiles()
-  })
-  
   output$testtext = dataInput
-
 }
 
-ui = bootstrapPage(
-  theme = shinythemes::shinytheme('simplex'),
-  leaflet::leafletOutput('map', height = '100%', width = '100%'),
-  absolutePanel(top = 10, left = 50, id = 'controls',
-                selectInput("seldistrict", "select District (or search by typewrite)", append("all", sort(unique(data$Bezirk)))),
-                sliderInput("seldate", 
-                            "select Date", 
-                            min = as.Date("2020-02-26","%Y-%m-%d"),
-                            max = as.Date("2021-06-06","%Y-%m-%d"),
-                            value = as.Date("2020-02-26")
-                ),
-                textOutput("testtext")
-  ),
-  tags$style(type = "text/css", "
-    html, body {width:100%;height:100%}     
-    #controls{background-color:white;padding:20px;}
-  "))
 
+ui <- fluidPage(
+  titlePanel('For testing R Shiny Code'),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("seldistrict", "select District (or search by typewrite)", append("all", sort(unique(data$Bezirk)))),
+      sliderInput("seldate", 
+                  "select Date", 
+                  min = as.Date("2020-02-26","%Y-%m-%d"),
+                  max = as.Date("2021-06-06","%Y-%m-%d"),
+                  value = as.Date("2020-02-26")
+      ),
+    ),
+    mainPanel(
+      #tabsetPanel(
+        textOutput("testtext")
+      #)
+    )
+  )
+)
 
 shinyApp(ui, server)
 
