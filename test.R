@@ -25,7 +25,12 @@ data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ
 date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%Y-%m-%d")
 #time <- format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%H:%M:%S")
 data$Time = NULL
-data = data.frame(date, data)
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+norm7 = range01(as.double(sub(",", ".", data$SiebenTageInzidenzFaelle, fixed = TRUE)))
+print(norm7)
+
+data = data.frame(date, data, norm7)
 head(data)
 
 

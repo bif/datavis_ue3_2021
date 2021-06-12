@@ -25,9 +25,10 @@ data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ
 date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%Y-%m-%d")
 #time <- format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%H:%M:%S")
 data$Time = NULL
-data = data.frame(date, data)
-#head(data)
-
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+norm7 = range01(as.double(sub(",", ".", data$SiebenTageInzidenzFaelle, fixed = TRUE)))
+print(norm7)
+data = data.frame(date, data, norm7)
 
 # load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
 #map = geojson_read("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json")
@@ -44,23 +45,36 @@ pal <- colorNumeric("viridis", NULL)
 
 server = function(input, output, session) {
   
+
   dataInput = reactive({
-    x = data %>%
-      #filter(date == input$seldate)
-      filter(Bezirk == input$seldistrict, date == input$seldate)
-    x$SiebenTageInzidenzFaelle
+    if(input$seldistrict == "all") 
+    {
+      x = data %>%
+        filter(date == input$seldate)
+      
+      y = data.frame(x$SiebenTageInzidenzFaelle)
+      rownames(y) = x$Bezirk
+      #print(y[input$seldistrict])
+      y
+    }
+    else
+    {
+      x = data %>%
+        filter(Bezirk == input$seldistrict, date == input$seldate)
+      
+      print(paste("Bezirk: ", x$SiebenTageInzidenzFaelle))
+      x$SiebenTageInzidenzFaelle
+    }
   })
-  
   
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
       addTiles() %>%
-      addPolygons(stroke = TRUE, smoothFactor = 0.3, fillOpacity = 0.5) %>%
-      #      ,
-      #    fillColor = ~pal(log10(pop)),
-      #    label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
-      #    addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
-      #              labFormat = labelFormat(transform = function(x) round(10^x))) %>%
+      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,
+          fillColor = ~pal(log10(data$norm7))) %>%
+        #  label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
+        #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
+        #            labFormat = labelFormat(transform = function(x) round(10^x))) %>%
       setView( lng = 13.4
                , lat = 47.7
                , zoom = 8) %>%
