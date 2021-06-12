@@ -45,12 +45,22 @@ head(data)
 server = function(input, output, session) {
   
   dataInput = reactive({
-    x = data %>%
-      #filter(date == input$seldate)
-      filter(Bezirk == input$seldistrict, date == input$seldate)
-    x$SiebenTageInzidenzFaelle
+    if(input$seldistrict == "all") 
+    {
+      x = data %>%
+        filter(date == input$seldate)
+      print(x)
+      x
+    }
+    else
+    {
+      x = data %>%
+        filter(Bezirk == input$seldistrict, date == input$seldate)
+      x
+    }
   })
   
+
   output$testtext = dataInput
 }
 
