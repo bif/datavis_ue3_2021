@@ -21,6 +21,8 @@ library(geojsonR)
 #functions
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
+#options(encoding = "UTF-8")
+
 # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
 #head(data)
@@ -40,76 +42,30 @@ data = data.frame(date, data, range01(data$SiebenTageInzidenzFaelle))
 # directly read geojson trows an error - workaround with temporarry download
 download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
 path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
-districts = rgdal::readOGR(path_file)
+districts = rgdal::readOGR(path_file, encoding = "UTF-8")
 file.remove("./bezirke_999_geo.json")  #delete the tmpfile
 
 
 server = function(input, output, session) {
-  
-  # dataInput = reactive({
-  #   if(input$seldistrict == "all") 
-  #   {
-  #     x = data %>%
-  #       filter(date == input$seldate)
-      
-  #     y = data.frame(x$SiebenTageInzidenzFaelle)
-  #     #print(y)
-  #     rownames(y) = x$Bezirk
-  #     print(y[input$seldistrict])
-  #     y
-  #   }
-  #   else
-  #   {
-  #     x = data %>%
-  #       filter(Bezirk == input$seldistrict, date == input$seldate)
-      
-  #     print(paste("Bezirk: ", x$SiebenTageInzidenzFaelle))
-  #     x$SiebenTageInzidenzFaelle
-  #   }
-  # })
-  
-  
   colorInput = reactive({
     x = data %>%
       filter(date == input$seldate)
     retval = x$SiebenTageInzidenzFaelle
   })
   
-  fill_O = reactive({
-    x = data %>%
-      filter(date == input$seldate)
-    len = length(x$SiebenTageInzidenzFaelle)
-    if(input$seldistrict != "all") {
-      retval = rep(0, times=len)
-      for(i in 1:len) {
-        if(x$Bezirk[i] == input$seldistrict) {
-          retval[i] = 1
-        }
-      }
-    } else {
-      retval = rep(1, times=len)
-    }
-    retval
-  })
-  
- 
-  
- 
- qpal <- colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
+  pal <- colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
  
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
-      #addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = ~colorInput()) %>%
-      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,#~fill_O(),
-        #fillColor = ~qpal(seq(1,94,by=1))) %>%
-        fillColor = ~qpal(colorInput())) %>%
-        #  label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
-        #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
-        #            labFormat = labelFormat(transform = function(x) round(10^x))) %>%
+      
+      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,
+        fillColor = ~pal(colorInput()),
+        label = ~paste0("Sieben Tage Inzidenz,Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
+      addLegend(pal = pal, values = colorInput(), opacity = 1.0) %>%
       addTiles()
   })
   
-  output$testtext = colorInput
+  #output$testtext = colorInput
   
 }
 
@@ -117,14 +73,15 @@ ui = bootstrapPage(
   theme = shinythemes::shinytheme('simplex'),
   leaflet::leafletOutput('map', height = '100%', width = '100%'),
   absolutePanel(top = 10, left = 50, id = 'controls',
-                selectInput("seldistrict", "select District (or search by typewrite)", append("all", sort(unique(data$Bezirk)))),
+                #selectInput("seldistrict", "select District (or search by typewrite)", append("all", sort(unique(data$Bezirk)))),
+                selectInput("selfeature", "select Feature", c("Sieben Tage Inzidenz Faelle","Anzahl Tote Sum","Anzahl Geheilte Sum")),
                 sliderInput("seldate", 
                             "select Date", 
                             min = as.Date("2020-02-26","%Y-%m-%d"),
                             max = as.Date("2021-06-06","%Y-%m-%d"),
                             value = as.Date("2020-02-26"),
                             animate = animationOptions(interval = 1000, loop = TRUE),
-                            step = 7
+                            step = 1
                 )#,
                 #textOutput("testtext")
   ),
