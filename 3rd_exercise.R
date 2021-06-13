@@ -97,20 +97,16 @@ server = function(input, output, session) {
  
   
  
- #qpal <- colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
+ qpal <- colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
  
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
-      #addTiles() %>%
-      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = ~colorInput()) %>%
-#      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,#~fill_O(),
-#        fillColor = ~qpal(seq(1,94,by=1))) #%>%
+      #addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = ~colorInput()) %>%
+      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,#~fill_O(),
+        fillColor = ~qpal(seq(1,94,by=1))) %>%
         #  label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
         #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
         #            labFormat = labelFormat(transform = function(x) round(10^x))) %>%
-      #setView( lng = 13.4
-      #         , lat = 47.7
-      #         , zoom = 8) %>%
       addTiles()
   })
   
