@@ -72,43 +72,39 @@ server = function(input, output, session) {
   colorInput = reactive({
     x = data %>%
       filter(date == input$seldate)
-    fill_C = x$range01.data.SiebenTageInzidenzFaelle.
 
-    if(input$seldistrict != "all") {
-      fill_O = rep(0, times=length(fill_C))
-      for(i in 1:length(fill_C)) {
-        if(x$Bezirk[i] == input$seldistrict) {
-          fill_O[i] = 1
-          #print(x$Bezirk[i])
-        }
-      }
-    }
-    else {
-      fill_O = rep(1, times=length(fill_C))
-    }
-    #x = c(fill_O, fill_C)
-    #print(unlist(x$SiebenTageInzidenzFaelle))
-    #print(length(x$SiebenTageInzidenzFaelle))
-    #retval = unlist(x$SiebenTageInzidenzFaelle)
-    print(fill_O)
-    print(max(x$SiebenTageInzidenzFaelle))
-    print(x$range01.data.SiebenTageInzidenzFaelle)
-    #retval = fill_O#seq(1,94,by=0.01)
     retval = x$range01.data.SiebenTageInzidenzFaelle
     
+  })
+  
+  fill_O = reactive({
+    x = data %>%
+      filter(date == input$seldate)
+    len = length(x$SiebenTageInzidenzFaelle)
+    if(input$seldistrict != "all") {
+      retval = rep(0, times=len)
+      for(i in 1:len) {
+        if(x$Bezirk[i] == input$seldistrict) {
+          retval[i] = 1
+        }
+      }
+    } else {
+      retval = rep(1, times=len)
+    }
+    retval
   })
   
  
   
  
- qpal <- colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
+ #qpal <- colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
  
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
       #addTiles() %>%
-      #addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 0.5,
       addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = ~colorInput()) %>%
-        #fillColor = ~qpal(seq(1,94,by=1))) %>%
+      #addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = ~fill_O(),
+       # fillColor = ~qpal(seq(1,94,by=1))) %>%
         #  label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
         #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
         #            labFormat = labelFormat(transform = function(x) round(10^x))) %>%
@@ -131,7 +127,9 @@ ui = bootstrapPage(
                             "select Date", 
                             min = as.Date("2020-02-26","%Y-%m-%d"),
                             max = as.Date("2021-06-06","%Y-%m-%d"),
-                            value = as.Date("2020-02-26")
+                            value = as.Date("2020-02-26"),
+                            animate =
+                              animationOptions(interval = 1000, loop = TRUE)
                 ),
                 textOutput("testtext")
   ),
