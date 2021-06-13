@@ -103,14 +103,14 @@ server = function(input, output, session) {
     leaflet(districts) %>%
       #addTiles() %>%
       addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = ~colorInput()) %>%
-      #addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = ~fill_O(),
-       # fillColor = ~qpal(seq(1,94,by=1))) %>%
+#      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,#~fill_O(),
+#        fillColor = ~qpal(seq(1,94,by=1))) #%>%
         #  label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
         #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
         #            labFormat = labelFormat(transform = function(x) round(10^x))) %>%
-      setView( lng = 13.4
-               , lat = 47.7
-               , zoom = 8) %>%
+      #setView( lng = 13.4
+      #         , lat = 47.7
+      #         , zoom = 8) %>%
       addTiles()
   })
   
@@ -128,10 +128,10 @@ ui = bootstrapPage(
                             min = as.Date("2020-02-26","%Y-%m-%d"),
                             max = as.Date("2021-06-06","%Y-%m-%d"),
                             value = as.Date("2020-02-26"),
-                            animate =
-                              animationOptions(interval = 1000, loop = TRUE)
-                ),
-                textOutput("testtext")
+                            animate = animationOptions(interval = 1000, loop = TRUE),
+                            step = 7
+                )#,
+                #textOutput("testtext")
   ),
   tags$style(type = "text/css", "
     html, body {width:100%;height:100%}     
