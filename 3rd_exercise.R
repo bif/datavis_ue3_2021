@@ -85,21 +85,24 @@ server = function(input, output, session) {
     else {
       fill_O = rep(1, times=length(fill_C))
     }
-    x = c(fill_O, fill_C)
-    print(x)
-    retval = x
+    #x = c(fill_O, fill_C)
+    print(unlist(x$SiebenTageInzidenzFaelle))
+    print(length(x$SiebenTageInzidenzFaelle))
+    retval = unlist(x$SiebenTageInzidenzFaelle)
+    
   })
   
   #pal <- colorNumeric(
   #  palette = colorRamp(c("#000000", "#FFFFFF"), fillCol),
   #  domain = NULL)
+  qpal <- colorQuantile("Blues", seq(1,94,by=1), n = 7)
   
   
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
-      addTiles() %>%
-      addPolygons(stroke = TRUE, color = "black", weight = 0.7, opacity = 1, smoothFactor = 0.3, fillOpacity = 0, fillColor = "Red") %>%
-          #fillColor = ~pal(fillCol)) %>%
+      #addTiles() %>%
+      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 0.5,
+        fillColor = ~qpal(seq(1,94,by=1))) %>%
         #  label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
         #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
         #            labFormat = labelFormat(transform = function(x) round(10^x))) %>%
