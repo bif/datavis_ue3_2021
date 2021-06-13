@@ -1,8 +1,8 @@
 # install libraries
 #install.packages(c("OpenStreetMap", "DT", "RColorBrewer", "mapproj", "sf", "RgoogleMaps", 
-#                   "scales", "rworldmap", "maps", "tidyverse", "rnaturalearth", 
-#                   "rnaturalearthdata", "rgeos", "ggspatial", "maptools", "leaflet", "sf", 
-#                   "tmap", "here", "rgdal", "scales", "sf", "geojsonlint", "plotly", "geojsonR"))
+ #                 "scales", "rworldmap", "maps", "tidyverse", "rnaturalearth", 
+  #                "rnaturalearthdata", "rgeos", "ggspatial", "maptools", "leaflet", "sf", 
+   #              "tmap", "here", "rgdal", "scales", "sf", "geojsonlint", "plotly", "geojsonR"))
 # install package from github
 #devtools::install_github("dkahle/ggmap", ref = "tidyup")
 
@@ -79,6 +79,7 @@ server = function(input, output, session) {
       for(i in 1:length(fill_C)) {
         if(x$Bezirk[i] == input$seldistrict) {
           fill_O[i] = 1
+          #print(x$Bezirk[i])
         }
       }
     }
@@ -86,23 +87,28 @@ server = function(input, output, session) {
       fill_O = rep(1, times=length(fill_C))
     }
     #x = c(fill_O, fill_C)
-    print(unlist(x$SiebenTageInzidenzFaelle))
-    print(length(x$SiebenTageInzidenzFaelle))
-    retval = unlist(x$SiebenTageInzidenzFaelle)
+    #print(unlist(x$SiebenTageInzidenzFaelle))
+    #print(length(x$SiebenTageInzidenzFaelle))
+    #retval = unlist(x$SiebenTageInzidenzFaelle)
+    print(fill_O)
+    print(max(x$SiebenTageInzidenzFaelle))
+    print(x$range01.data.SiebenTageInzidenzFaelle)
+    #retval = fill_O#seq(1,94,by=0.01)
+    retval = x$range01.data.SiebenTageInzidenzFaelle
     
   })
   
-  #pal <- colorNumeric(
-  #  palette = colorRamp(c("#000000", "#FFFFFF"), fillCol),
-  #  domain = NULL)
-  qpal <- colorQuantile("Blues", seq(1,94,by=1), n = 7)
+ 
   
-  
+ 
+ qpal <- colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
+ 
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
       #addTiles() %>%
-      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 0.5,
-        fillColor = ~qpal(seq(1,94,by=1))) %>%
+      #addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 0.5,
+      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = ~colorInput()) %>%
+        #fillColor = ~qpal(seq(1,94,by=1))) %>%
         #  label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
         #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
         #            labFormat = labelFormat(transform = function(x) round(10^x))) %>%
