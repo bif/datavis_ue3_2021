@@ -72,19 +72,22 @@ server = function(input, output, session) {
   colorInput = reactive({
     x = data %>%
       filter(date == input$seldate)
-    fillColor = x$range01.data.SiebenTageInzidenzFaelle.
+    fill_C = x$range01.data.SiebenTageInzidenzFaelle.
 
     if(input$seldistrict != "all") {
-      for(i in 1:length(y)) {
-        if(x$Bezirk[i] != input$seldistrict) {
-          y[i] = 0
-        }
-        else {
-          y[i] = 1
+      fill_O = rep(0, times=length(fill_C))
+      for(i in 1:length(fill_C)) {
+        if(x$Bezirk[i] == input$seldistrict) {
+          fill_O[i] = 1
         }
       }
     }
-    retval = y
+    else {
+      fill_O = rep(1, times=length(fill_C))
+    }
+    x = c(fill_O, fill_C)
+    print(x)
+    retval = x
   })
   
   #pal <- colorNumeric(
@@ -106,7 +109,7 @@ server = function(input, output, session) {
       addTiles()
   })
   
-  #output$testtext = dataInput
+  output$testtext = colorInput
   
 }
 
@@ -120,8 +123,8 @@ ui = bootstrapPage(
                             min = as.Date("2020-02-26","%Y-%m-%d"),
                             max = as.Date("2021-06-06","%Y-%m-%d"),
                             value = as.Date("2020-02-26")
-                )#,
-                #textOutput("testtext")
+                ),
+                textOutput("testtext")
   ),
   tags$style(type = "text/css", "
     html, body {width:100%;height:100%}     
