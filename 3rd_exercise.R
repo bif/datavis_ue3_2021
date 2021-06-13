@@ -18,6 +18,9 @@ library(plotly)
 library(RJSONIO)
 library(geojsonR)
 
+#functions
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
 # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
 #head(data)
@@ -25,14 +28,10 @@ data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ
 date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%Y-%m-%d")
 #time <- format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%H:%M:%S")
 data$Time = NULL
-data = data.frame(date, data)
 data$SiebenTageInzidenzFaelle = gsub(",", ".", data$SiebenTageInzidenzFaelle)
 data=mutate(data, SiebenTageInzidenzFaelle = as.double(SiebenTageInzidenzFaelle))
-
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-colorRange7 <- function(x){
-  range01(x)
-}
+data = data.frame(date, data, range01(data$SiebenTageInzidenzFaelle))
+#str(data)
 
 # load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
 #map = geojson_read("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json")
@@ -45,41 +44,59 @@ districts = rgdal::readOGR(path_file)
 file.remove("./bezirke_999_geo.json")  #delete the tmpfile
 
 
-pal <- colorNumeric(
-  palette = "Blues",
-  colorRange7(data$SiebenTageInzidenzFaelle))
-
 server = function(input, output, session) {
   
-  dataInput = reactive({
-    if(input$seldistrict == "all") 
-    {
-      x = data %>%
-        filter(date == input$seldate)
+  # dataInput = reactive({
+  #   if(input$seldistrict == "all") 
+  #   {
+  #     x = data %>%
+  #       filter(date == input$seldate)
       
-      y = data.frame(x$SiebenTageInzidenzFaelle)
-      #print(y)
-      rownames(y) = x$Bezirk
-      print(y[input$seldistrict])
-      y
-    }
-    else
-    {
-      x = data %>%
-        filter(Bezirk == input$seldistrict, date == input$seldate)
+  #     y = data.frame(x$SiebenTageInzidenzFaelle)
+  #     #print(y)
+  #     rownames(y) = x$Bezirk
+  #     print(y[input$seldistrict])
+  #     y
+  #   }
+  #   else
+  #   {
+  #     x = data %>%
+  #       filter(Bezirk == input$seldistrict, date == input$seldate)
       
-      print(paste("Bezirk: ", x$SiebenTageInzidenzFaelle))
-      x$SiebenTageInzidenzFaelle
+  #     print(paste("Bezirk: ", x$SiebenTageInzidenzFaelle))
+  #     x$SiebenTageInzidenzFaelle
+  #   }
+  # })
+  
+  
+  colorInput = reactive({
+    x = data %>%
+      filter(date == input$seldate)
+    fillColor = x$range01.data.SiebenTageInzidenzFaelle.
+
+    if(input$seldistrict != "all") {
+      for(i in 1:length(y)) {
+        if(x$Bezirk[i] != input$seldistrict) {
+          y[i] = 0
+        }
+        else {
+          y[i] = 1
+        }
+      }
     }
+    retval = y
   })
   
+  #pal <- colorNumeric(
+  #  palette = colorRamp(c("#000000", "#FFFFFF"), fillCol),
+  #  domain = NULL)
   
   
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
       addTiles() %>%
-      addPolygons(stroke = TRUE, color = "black", weight = 0.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,
-          fillColor = ~pal(data$SiebenTageInzidenzFaelle)) %>%
+      addPolygons(stroke = TRUE, color = "black", weight = 0.7, opacity = 1, smoothFactor = 0.3, fillOpacity = 0, fillColor = "Red") %>%
+          #fillColor = ~pal(fillCol)) %>%
         #  label = ~paste0(name, ": ", formatC(pop, big.mark = ","))) %>%
         #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
         #            labFormat = labelFormat(transform = function(x) round(10^x))) %>%
@@ -89,8 +106,8 @@ server = function(input, output, session) {
       addTiles()
   })
   
-  output$testtext = dataInput
-
+  #output$testtext = dataInput
+  
 }
 
 ui = bootstrapPage(
@@ -103,8 +120,8 @@ ui = bootstrapPage(
                             min = as.Date("2020-02-26","%Y-%m-%d"),
                             max = as.Date("2021-06-06","%Y-%m-%d"),
                             value = as.Date("2020-02-26")
-                ),
-                textOutput("testtext")
+                )#,
+                #textOutput("testtext")
   ),
   tags$style(type = "text/css", "
     html, body {width:100%;height:100%}     
