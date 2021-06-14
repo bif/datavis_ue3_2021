@@ -2,3 +2,4 @@ venv
 .idea
 *.png
 listeners_moseout.js
+data_base/maps/*

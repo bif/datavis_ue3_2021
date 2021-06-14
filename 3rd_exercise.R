@@ -17,11 +17,10 @@ library(geojsonio)
 library(plotly)
 library(RJSONIO)
 library(geojsonR)
+library(htmltools)
 
 #functions
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-
-#options(encoding = "UTF-8")
 
 # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
@@ -45,7 +44,6 @@ path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
 districts = rgdal::readOGR(path_file, encoding = "UTF-8")
 file.remove("./bezirke_999_geo.json")  #delete the tmpfile
 
-
 server = function(input, output, session) {
   colorInput = reactive({
     x = data %>%
@@ -57,11 +55,10 @@ server = function(input, output, session) {
  
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
-      
       addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,
         fillColor = ~pal(colorInput()),
-        label = ~paste0("Sieben Tage Inzidenz,Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
-      addLegend(pal = pal, values = colorInput(), opacity = 1.0) %>%
+        label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
+      addLegend(pal = pal, values = colorInput(), opacity = 1.0, title = input$selfeature) %>%
       addTiles()
   })
   
@@ -74,7 +71,7 @@ ui = bootstrapPage(
   leaflet::leafletOutput('map', height = '100%', width = '100%'),
   absolutePanel(top = 10, left = 50, id = 'controls',
                 #selectInput("seldistrict", "select District (or search by typewrite)", append("all", sort(unique(data$Bezirk)))),
-                selectInput("selfeature", "select Feature", c("Sieben Tage Inzidenz Faelle","Anzahl Tote Sum","Anzahl Geheilte Sum")),
+                selectInput("selfeature", "select Feature", c("Sieben Tage Inzidenz F\344lle","Summe Anzahl Tote","Summe Anzahl Geheilt")),
                 sliderInput("seldate", 
                             "select Date", 
                             min = as.Date("2020-02-26","%Y-%m-%d"),
