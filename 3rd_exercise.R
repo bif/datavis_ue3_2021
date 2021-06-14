@@ -57,15 +57,18 @@ server = function(input, output, session) {
  
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
-      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,
-        fillColor = ~pal(colorInput())) %>%
-    #label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
-    #        label = ~sprintf(
-    #          "<strong>Sieben Tage Inzidenz, Bezirk %s</strong><br/>%d per 100000 people</sup>",
-    #          name, colorInput())) %>% 
-    #        lapply(htmltools::HTML) %>%
-    addLegend(pal = pal, values = colorInput(), opacity = 1.0, title = input$selfeature) %>%
-    addTiles()
+      addPolygons(
+        stroke = TRUE, color = "black", weight = 1.5, opacity = 1, dashArray = "3", fillOpacity = 1, fillColor = ~pal(colorInput()),
+        highlight = highlightOptions(
+          weight = 5,color = "#666", dashArray = "", fillOpacity = 1, bringToFront = TRUE),
+#      ) %>%
+    label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
+#        label = sprintf(
+#          "<strong>Sieben Tage Inzidenz, Bezirk %s</strong><br/>%d per 100000 people</sup>",
+#          districts$name, ~colorInput()) %>% 
+#        lapply(htmltools::HTML)) %>%
+      addLegend(pal = pal, values = colorInput(), opacity = 1.0, title = input$selfeature) %>%
+      addTiles()
   })
   
   #output$testtext = colorInput
