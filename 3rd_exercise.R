@@ -53,6 +53,14 @@ server = function(input, output, session) {
     retval = x$SiebenTageInzidenzFaelle
   })
   
+  getSelFeature = reactive({
+    retval = input$selfeature
+  })
+  
+  getLabel = function(name, selF, val) {
+    retval = paste0(selF, " Bezirk ", name, ": ", formatC(val, big.mark = ","))
+  }
+  
   pal = colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
  
   output$map = leaflet::renderLeaflet({
@@ -60,13 +68,13 @@ server = function(input, output, session) {
       addPolygons(
         stroke = TRUE, color = "black", weight = 1.5, opacity = 1, dashArray = "3", fillOpacity = 1, fillColor = ~pal(colorInput()),
         highlight = highlightOptions(
-          weight = 5,color = "#666", dashArray = "", fillOpacity = 1, bringToFront = TRUE),
-#      ) %>%
-    label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
-#        label = sprintf(
-#          "<strong>Sieben Tage Inzidenz, Bezirk %s</strong><br/>%d per 100000 people</sup>",
-#          districts$name, ~colorInput()) %>% 
-#        lapply(htmltools::HTML)) %>%
+          weight = 4,color = "#666", dashArray = "", fillOpacity = 1, bringToFront = TRUE),
+        #label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
+        #label = ~sprintf(
+        #  "<strong>Sieben Tage Inzidenz, Bezirk %s</strong><br/>%c per 100000 people</sup>",
+        #  districts$name, formatC(colorInput(), big.mark = ",")) %>% 
+        #lapply(htmltools::HTML)) %>%
+        label = ~getLabel(name, getSelFeature(), colorInput())) %>%
       addLegend(pal = pal, values = colorInput(), opacity = 1.0, title = input$selfeature) %>%
       addTiles()
   })
