@@ -18,13 +18,17 @@ library(plotly)
 library(RJSONIO)
 library(geojsonR)
 library(htmltools)
-#todos: 
-#  serverside - function to create tooltip with respect to selectinput
-#  UI side - how to use UI input in an other ui - checkbox for step
-#functions
+
+
+# globals
+selectableFeatures = c("Sieben Tage Inzidenz F\344lle","Summe Anzahl Tote","Summe Anzahl Geheilt")
+
+# functions
 range01 = function(x){
   (x-min(x))/(max(x)-min(x))
 }
+
+# source
 
 # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
@@ -47,11 +51,26 @@ file.remove("./bezirke_999_geo.json")  #delete the tmpfile
 names(districts)
   
 server = function(input, output, session) {
-  colorInput = reactive({
+  selInput = reactive({
     x = data %>%
       filter(date == input$seldate)
-    retval = x$SiebenTageInzidenzFaelle
+    
+     retval = switch(  
+       input$selfeature,  
+       "Sieben Tage Inzidenz F\344lle" = x$SiebenTageInzidenzFaelle,
+       "Summe Anzahl Tote" = x$AnzahlTotSum,
+       "Summe Anzahl Geheilt" = x$AnzahlGeheiltSum
+     )
+     
+    #  retval = switch(  
+    #    input$selfeature,  
+    #    selectableFeatures[1] = x$SiebenTageInzidenzFaelle,
+    #    selectableFeatures[2] = x$AnzahlTotSum,
+    #    selectableFeatures[3] = x$AnzahlGeheiltSum
+    #  )
   })
+  
+  getPalData = 
   
   getSelFeature = reactive({
     retval = input$selfeature
@@ -61,25 +80,25 @@ server = function(input, output, session) {
     retval = paste0(selF, " Bezirk ", name, ": ", formatC(val, big.mark = ","))
   }
   
-  pal = colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
+  pal = colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle)
  
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
       addPolygons(
-        stroke = TRUE, color = "black", weight = 1.5, opacity = 1, dashArray = "3", fillOpacity = 1, fillColor = ~pal(colorInput()),
+        stroke = TRUE, color = "black", weight = 1.5, opacity = 1, dashArray = "3", fillOpacity = 1, fillColor = ~pal(selInput()),
         highlight = highlightOptions(
           weight = 4,color = "#666", dashArray = "", fillOpacity = 1, bringToFront = TRUE),
-        #label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
+        #label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(selInput(), big.mark = ","))) %>%
         #label = ~sprintf(
         #  "<strong>Sieben Tage Inzidenz, Bezirk %s</strong><br/>%c per 100000 people</sup>",
-        #  districts$name, formatC(colorInput(), big.mark = ",")) %>% 
+        #  districts$name, formatC(selInput(), big.mark = ",")) %>% 
         #lapply(htmltools::HTML)) %>%
-        label = ~getLabel(name, getSelFeature(), colorInput())) %>%
-      addLegend(pal = pal, values = colorInput(), opacity = 1.0, title = input$selfeature) %>%
+        label = ~getLabel(name, getSelFeature(), selInput())) %>%
+      addLegend(pal = pal, values = selInput(), opacity = 1.0, title = input$selfeature) %>%
       addTiles()
   })
   
-  #output$testtext = colorInput
+  #output$testtext = selInput
   
 }
 
@@ -88,7 +107,7 @@ ui = bootstrapPage(
   leaflet::leafletOutput('map', height = '100%', width = '100%'),
   absolutePanel(top = 10, left = 50, id = 'controls',
                 #selectInput("seldistrict", "select District (or search by typewrite)", append("all", sort(unique(data$Bezirk)))),
-                selectInput("selfeature", "select Feature", c("Sieben Tage Inzidenz F\344lle","Summe Anzahl Tote","Summe Anzahl Geheilt")),
+                selectInput("selfeature", "select Feature", selectableFeatures),
                 sliderInput("seldate", 
                             "select Date", 
                             min = as.Date("2020-02-26","%Y-%m-%d"),
