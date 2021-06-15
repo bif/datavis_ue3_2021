@@ -47,13 +47,14 @@ data = data.frame(data, range01(data$SiebenTageInzidenzFaelle))
 # directly read geojson trows an error - workaround with temporarry download
 #download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
 #path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
-#download.file("https://github.com/bif/datavis_ue3_2021/raw/sync_GeJSON_CofidData/data_base/modified/mod_bezirke_999_geo.json", destfile="mod_bezirke_999_geo.json")
-#path_file = paste(getwd(),"/mod_bezirke_999_geo.json", sep = "")
-path_file = paste("data_base/modified", "/mod_bezirke_999_geo.json", sep = "")
+download.file("https://github.com/bif/datavis_ue3_2021/raw/sync_GeJSON_CofidData/data_base/modified/mod_bezirke_999_geo.json", destfile="mod_bezirke_999_geo.json")
+path_file = paste(getwd(),"/mod_bezirke_999_geo.json", sep = "")
+#path_file = paste("data_base/modified", "/mod_bezirke_999_geo.json", sep = "")
 
 districts = geojsonio::geojson_read(path_file, what = "sp")
 class(districts)
-file.remove("./bezirke_999_geo.json")  #delete the tmpfile
+#file.remove("./bezirke_999_geo.json")  #delete the tmpfile
+file.remove("./mod_bezirke_999_geo.json")  #delete the tmpfile
 
 names(districts)
   
