@@ -24,82 +24,79 @@ range01 = function(x){
   (x-min(x))/(max(x)-min(x))
 }
 
-# load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
-data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
-#head(data)
+# # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
+#data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
+#data = read.csv(paste(getwd(),"/data_base/raw", "/CovidFaelle_Timeline_GKZ-1.csv", sep = ""))
+data = read.csv(paste(getwd(),"/data_base/modified", "/mod_CovidFaelle_Timeline_GKZ-1.csv", sep = ""), sep = ";", fileEncoding = "UTF-8")
+head(data)
 
-date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%Y-%m-%d")
-#time = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%H:%M:%S")
-data$Time = NULL
+date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y",tz="")) ,format = "%Y-%m-%d")
+#data$Time = NULL
 data$SiebenTageInzidenzFaelle = gsub(",", ".", data$SiebenTageInzidenzFaelle)
 data=mutate(data, SiebenTageInzidenzFaelle = as.double(SiebenTageInzidenzFaelle))
-data = data.frame(date, data,range01(data$SiebenTageInzidenzFaelle))
-#str(data)
-#print(data$range01.data.SiebenTageInzidenzFaelle.)
+data = data.frame(data, range01(data$SiebenTageInzidenzFaelle))
 
 
-# load map of austrian districts from: https://github.com/ginseng666/GeoJSON-TopoJSON-Austria
-#map = geojson_read("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json")
-#dstricts = rgdal::readOGR(map)
 
-# directly read geojson trows an error - workaround with temporarry download
-##download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
-##path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
-##districts = rgdal::readOGR(path_file)
-##file.remove("./bezirke_999_geo.json")  #delete the tmpfile
+#download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
+#path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
+path_file = paste("data_base/maps/AustriaGeoJSON/2021/simplified-99.9", "/mod_bezirke_999_geo.json", sep = "")
 
 
-download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
-path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
 districts = geojsonio::geojson_read(path_file, what = "sp")
 class(districts)
 file.remove("./bezirke_999_geo.json")  #delete the tmpfile
 
 names(districts)
   
-server = function(input, output, session) {
-  colorInput = reactive({
-    x = data %>%
-      filter(date == input$seldate)
-    retval = x$SiebenTageInzidenzFaelle
-  })
-  
-  pal = colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
-  
-  output$map = leaflet::renderLeaflet({
-    leaflet(districts) %>%
-      addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,
-        fillColor = ~pal(colorInput())) %>%
-    #label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
-    #        label = ~sprintf(
-    #          "<strong>Sieben Tage Inzidenz, Bezirk %s</strong><br/>%d per 100000 people</sup>",
-    #          name, colorInput())) %>% 
-    #        lapply(htmltools::HTML) %>%
-    addLegend(pal = pal, values = colorInput(), opacity = 1.0, title = input$selfeature) %>%
-    addTiles()
-  })
-}
-ui = bootstrapPage(
-  theme = shinythemes::shinytheme('simplex'),
-  leaflet::leafletOutput('map', height = '100%', width = '100%'),
-  absolutePanel(top = 10, left = 50, id = 'controls',
-                #selectInput("seldistrict", "select District (or search by typewrite)", append("all", sort(unique(data$Bezirk)))),
-                selectInput("selfeature", "select Feature", c("Sieben Tage Inzidenz F\344lle","Summe Anzahl Tote","Summe Anzahl Geheilt")),
-                sliderInput("seldate", 
-                            "select Date", 
-                            min = as.Date("2020-02-26","%Y-%m-%d"),
-                            max = as.Date("2021-06-06","%Y-%m-%d"),
-                            value = as.Date("2020-02-26"),
-                            animate = animationOptions(interval = 1000, loop = TRUE),
-                            step = 1
-                )#,
-                #textOutput("testtext")
-  ),
-  tags$style(type = "text/css", "
-    html, body {width:100%;height:100%}     
-    #controls{background-color:white;padding:20px;}
-  ")
-)
+#manipulate GeoJSON
+#str(districts)
+head(districts)
+print(districts$Zwettl)
 
-shinyApp(ui, server)
+# server = function(input, output, session) {
+#   colorInput = reactive({
+#     x = data %>%
+#       filter(date == input$seldate)
+#     retval = x$SiebenTageInzidenzFaelle
+#   })
+  
+#   pal = colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle )
+  
+#   output$map = leaflet::renderLeaflet({
+#     leaflet(districts) %>%
+#       addPolygons(stroke = TRUE, color = "black", weight = 1.5, opacity = 1, smoothFactor = 0.3, fillOpacity = 1,
+#         fillColor = ~pal(colorInput())) %>%
+#     #label = ~paste0("Sieben Tage Inzidenz, Bezirk ", name, ": ", formatC(colorInput(), big.mark = ","))) %>%
+#     #        label = ~sprintf(
+#     #          "<strong>Sieben Tage Inzidenz, Bezirk %s</strong><br/>%d per 100000 people</sup>",
+#     #          name, colorInput())) %>% 
+#     #        lapply(htmltools::HTML) %>%
+#     addLegend(pal = pal, values = colorInput(), opacity = 1.0, title = input$selfeature) %>%
+#     addTiles()
+#   })
+# }
+# ui = bootstrapPage(
+#   theme = shinythemes::shinytheme('simplex'),
+#   leaflet::leafletOutput('map', height = '100%', width = '100%'),
+#   absolutePanel(top = 10, left = 50, id = 'controls',
+#                 #selectInput("seldistrict", "select District (or search by typewrite)", append("all", sort(unique(data$Bezirk)))),
+#                 selectInput("selfeature", "select Feature", c("Sieben Tage Inzidenz F\344lle","Summe Anzahl Tote","Summe Anzahl Geheilt")),
+#                 sliderInput("seldate", 
+#                             "select Date", 
+#                             min = as.Date("2020-02-26","%Y-%m-%d"),
+#                             max = as.Date("2021-06-06","%Y-%m-%d"),
+#                             value = as.Date("2020-02-26"),
+#                             animate = animationOptions(interval = 1000, loop = TRUE),
+#                             step = 1
+#                 )#,
+#                 #textOutput("testtext")
+#   ),
+#   tags$style(type = "text/css", "
+#     html, body {width:100%;height:100%}     
+#     #controls{background-color:white;padding:20px;}
+#   ")
+# )
+
+# shinyApp(ui, server)
 
