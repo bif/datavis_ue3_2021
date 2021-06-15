@@ -70,8 +70,6 @@ server = function(input, output, session) {
     #  )
   })
   
-  getPalData = 
-  
   getSelFeature = reactive({
     retval = input$selfeature
   })

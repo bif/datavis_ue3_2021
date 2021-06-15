@@ -3,3 +3,5 @@ venv
 *.png
 listeners_moseout.js
 data_base/maps/*
+.Rhistory
+.RData
