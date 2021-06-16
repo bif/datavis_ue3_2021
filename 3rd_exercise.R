@@ -1,3 +1,4 @@
+# 2021-06-16
 # install libraries
 #install.packages(c("OpenStreetMap", "DT", "RColorBrewer", "mapproj", "sf", "RgoogleMaps", 
  #                 "scales", "rworldmap", "maps", "tidyverse", "rnaturalearth", 
@@ -18,7 +19,6 @@ library(plotly)
 library(RJSONIO)
 library(geojsonR)
 library(htmltools)
-
 
 # globals
 selectableFeatures = c("Sieben Tage Inzidenz F\344lle","Summe Anzahl Tote","Summe Anzahl Geheilt")
