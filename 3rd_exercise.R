@@ -33,7 +33,9 @@ range01 = function(x){
 # load autrian COVID data from: https://www.data.gv.at/katalog/dataset/4b71eb3d-7d55-4967-b80d-91a3f220b60c
 #data = read.csv("https://covid19-dashboard.ages.at/data/CovidFaelle_Timeline_GKZ.csv", sep = ";", fileEncoding = "UTF-8")
 #data = read.csv(paste(getwd(),"/data_base/modified", "/mod_CovidFaelle_Timeline_GKZ-1.csv", sep = ""), sep = ";", fileEncoding = "UTF-8")
-data = read.csv("https://github.com/bif/datavis_ue3_2021/raw/sync_GeJSON_CofidData/data_base/modified/mod_CovidFaelle_Timeline_GKZ-1.csv", sep = ";", fileEncoding = "UTF-8")
+data = read.csv("https://github.com/bif/datavis_ue3_2021/raw/main/data_base/modified/mod_CovidFaelle_Timeline_GKZ-1.csv", sep = ";", fileEncoding = "UTF-8")
+#download.file("https://github.com/bif/datavis_ue3_2021/raw/sync_GeJSON_CofidData/data_base/modified/mod_CovidFaelle_Timeline_GKZ-1.csv", destfile="mod_CovidFaelle_Timeline_GKZ-1.csv")
+
 #head(data)
 
 #date = format(as.POSIXct(strptime(data$Time,"%d.%m.%Y %H:%M:%S",tz="")) ,format = "%Y-%m-%d")
@@ -41,13 +43,13 @@ data = read.csv("https://github.com/bif/datavis_ue3_2021/raw/sync_GeJSON_CofidDa
 data$SiebenTageInzidenzFaelle = gsub(",", ".", data$SiebenTageInzidenzFaelle)
 data=mutate(data, SiebenTageInzidenzFaelle = as.double(SiebenTageInzidenzFaelle))
 #data = data.frame(date, data, range01(data$SiebenTageInzidenzFaelle))
-data = data.frame(data, range01(data$SiebenTageInzidenzFaelle))
+
 #str(data)
 
 # directly read geojson trows an error - workaround with temporarry download
 #download.file("https://github.com/ginseng666/GeoJSON-TopoJSON-Austria/raw/master/2021/simplified-99.9/bezirke_999_geo.json", destfile="bezirke_999_geo.json")
 #path_file = paste(getwd(),"/bezirke_999_geo.json", sep = "")
-download.file("https://github.com/bif/datavis_ue3_2021/raw/sync_GeJSON_CofidData/data_base/modified/mod_bezirke_999_geo.json", destfile="mod_bezirke_999_geo.json")
+download.file("https://github.com/bif/datavis_ue3_2021/raw/main/data_base/modified/mod_bezirke_999_geo.json", destfile="mod_bezirke_999_geo.json")
 path_file = paste(getwd(),"/mod_bezirke_999_geo.json", sep = "")
 #path_file = paste("data_base/modified", "/mod_bezirke_999_geo.json", sep = "")
 
@@ -86,7 +88,8 @@ server = function(input, output, session) {
     retval = paste0(selF, " Bezirk ", name, ": ", formatC(val, big.mark = ","))
   }
   
-  pal = colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle)
+  #pal = colorNumeric(palette = "Reds", domain = data$SiebenTageInzidenzFaelle)
+  pal = colorBin(palette = "Reds", domain = data$SiebenTageInzidenzFaelle, bins=20)
  
   output$map = leaflet::renderLeaflet({
     leaflet(districts) %>%
